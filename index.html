@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Система координации съёмочной группы</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0A0F1E;
+    --bg2: #0D1424;
+    --bg3: #111827;
+    --text: #F1F5F9;
+    --muted: #8896AA;
+    --amber: #F59E0B;
+    --amber-dark: #D97706;
+    --amber-glow: rgba(245,158,11,0.15);
+    --red: #EF4444;
+    --green: #22C55E;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.14);
+    --glass: rgba(255,255,255,0.04);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 2rem;
+    background: rgba(10,15,30,0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-links .btn-nav,
+  .btn-nav {
+    background: var(--amber);
+    border: none;
+    color: #000 !important;
+    font-weight: 600;
+    padding: 0.45rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-nav:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem 4rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* SECTION LABEL */
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .tag-red { background: rgba(239,68,68,0.1); color: #F87171; border: 1px solid rgba(239,68,68,0.2); }
+  .tag-green { background: rgba(34,197,94,0.1); color: #4ADE80; border: 1px solid rgba(34,197,94,0.2); }
+  .tag-blue { background: rgba(99,102,241,0.1); color: #818CF8; border: 1px solid rgba(99,102,241,0.2); }
+  .tag-amber { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* ── PAGE 1: HERO ───────────────────────────────── */
+  #hero {
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: -300px; left: 50%;
+    transform: translateX(-50%);
+    width: 1000px; height: 1000px;
+    background: radial-gradient(circle, rgba(245,158,11,0.055) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  #hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    text-align: center;
+    max-width: 780px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    color: var(--amber);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.6rem, 6.5vw, 4.8rem);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-title .accent { color: var(--amber); }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: #000;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: 24px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+  }
+
+  .btn-primary:hover {
+    opacity: 0.88;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(245,158,11,0.4);
+  }
+
+  .btn-secondary {
+    background: var(--glass);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--border-hover);
+    background: rgba(255,255,255,0.07);
+    transform: translateY(-2px);
+  }
+
+  .hero-pills {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .hero-pill-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    margin-bottom: 0.1rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .hero-pill:hover .hero-pill-icon {
+    border-color: rgba(245,158,11,0.3);
+    background: var(--amber-glow);
+    color: var(--amber);
+  }
+
+  .hero-pill-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .scroll-hint {
+    margin-top: 3.5rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    animation: bounce 2.5s ease-in-out infinite;
+    opacity: 0.5;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(7px); }
+  }
+
+  /* ── PAGE 2: PAIN ───────────────────────────────── */
+  #pain { background: var(--bg2); }
+
+  .pain-header { margin-bottom: 3rem; }
+
+  .pain-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .pain-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 520px;
+    line-height: 1.65;
+  }
+
+  .pain-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .pain-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-top: 1px solid rgba(239,68,68,0.25);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    position: relative;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    overflow: hidden;
+  }
+
+  .pain-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,0.5), transparent);
+  }
+
+  .pain-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    border-color: rgba(239,68,68,0.2);
+  }
+
+  .pain-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #F87171;
+    margin-bottom: 1.25rem;
+  }
+
+  .pain-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .pain-card-text {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+  }
+
+  .pain-card-stat {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--red);
+    letter-spacing: -0.04em;
+  }
+
+  .pain-conclusion {
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--muted);
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+  }
+
+  .pain-conclusion strong { color: var(--text); }
+
+  /* ── PAGE 3: GAIN ───────────────────────────────── */
+  #gain { background: var(--bg); }
+
+  .gain-header { margin-bottom: 3rem; }
+
+  .gain-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .gain-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+  }
+
+  .gain-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 1.75rem;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+  }
+
+  .gain-row:hover {
+    border-color: rgba(245,158,11,0.25);
+    transform: translateX(5px);
+    background: rgba(245,158,11,0.03);
+  }
+
+  .gain-row-left { display: flex; align-items: flex-start; gap: 1rem; }
+
+  .gain-row-icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    background: var(--amber-glow);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amber);
+  }
+
+  .gain-row-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .gain-row-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .gain-row-stat {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--green);
+    white-space: nowrap;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.15);
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    text-align: right;
+  }
+
+  /* ── PAGE 4: PRODUCT ────────────────────────────── */
+  #product { background: var(--bg3); }
+
+  .product-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .product-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.65;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 2rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.25rem;
+    width: fit-content;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+    border-radius: 9px;
+    transition: color 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .feature-list li::before {
+    content: '';
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background: var(--green);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+  }
+
+  .feature-list li strong { color: var(--text); font-weight: 600; }
+
+  .mockup-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+
+  .mockup-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mockup-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    opacity: 0.8;
+  }
+
+  .mockup-row {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: background 0.2s;
+  }
+
+  .mockup-row:hover { background: rgba(255,255,255,0.06); }
+
+  .mockup-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.18rem 0.6rem;
+    border-radius: 100px;
+  }
+
+  .badge-green { background: rgba(34,197,94,0.12); color: #4ADE80; }
+  .badge-amber { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .badge-red { background: rgba(239,68,68,0.12); color: #F87171; }
+  .badge-blue { background: rgba(99,102,241,0.12); color: #818CF8; }
+
+  .roles-strip {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .roles-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .roles-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--glass);
+    font-weight: 500;
+    transition: border-color 0.2s;
+  }
+
+  .chip.warehouse { border-color: rgba(245,158,11,0.2); color: #FCD34D; }
+  .chip.production { border-color: rgba(99,102,241,0.2); color: #A5B4FC; }
+
+  /* ── PAGE 5: CONTACT ────────────────────────────── */
+  #contact {
+    background: linear-gradient(160deg, var(--bg) 0%, var(--bg3) 50%, var(--bg) 100%);
+  }
+
+  .contact-inner {
+    text-align: center;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .contact-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 2rem;
+    line-height: 1.1;
+  }
+
+  .contact-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    line-height: 1.65;
+  }
+
+  .contact-direct {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    padding: 0.85rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+  }
+
+  .contact-link:hover {
+    color: var(--text);
+    border-color: var(--border-hover);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .contact-link .link-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .contact-link:hover .link-icon { color: var(--amber); }
+
+  /* Bright START button */
+  .btn-start-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 1rem 2rem;
+    background: var(--amber);
+    color: #000;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 24px;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 24px rgba(245,158,11,0.35);
+    letter-spacing: 0.01em;
+  }
+
+  .btn-start-main:hover {
+    opacity: 0.88;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 36px rgba(245,158,11,0.45);
+  }
+
+  .doc-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.5rem;
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: var(--radius);
+    background: rgba(245,158,11,0.04);
+    text-decoration: none;
+    color: var(--amber);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .doc-download:hover {
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.4);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 1.75rem;
+    color: rgba(148,163,184,0.5);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    letter-spacing: 0.03em;
+  }
+
+  /* FADE IN */
+  .fade-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    nav { padding: 0.75rem 1rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 1rem 3rem; }
+    .tab-content.active { grid-template-columns: 1fr; }
+    .gain-row { grid-template-columns: 1fr; }
+    .gain-row-stat { width: fit-content; }
+    .tabs { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">3XMEDIA PRODUCTION</div>
+  <ul class="nav-links">
+    <li><a href="#pain">Проблема</a></li>
+    <li><a href="#gain">Выгода</a></li>
+    <li><a href="#product">Продукт</a></li>
+    <li><a href="https://3xproduction-production.up.railway.app/" target="_blank" class="btn-nav">Начать</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE 1: HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-tag">Для съёмочных групп</div>
+      <h1 class="hero-title">
+        Склад и площадка<br><span class="accent">под контролем</span>
+      </h1>
+      <p class="hero-subtitle">Система координации для съёмочной группы</p>
+      <div class="hero-btns">
+        <a href="https://3xproduction-production.up.railway.app/" target="_blank" class="btn-primary">Начать</a>
+        <a href="#product" class="btn-secondary">Как это работает</a>
+      </div>
+      <div class="hero-pills">
+        <div class="hero-pill">
+          <div class="hero-pill-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="7" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 7V5.5a4 4 0 0 1 8 0V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 11h18" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <span class="hero-pill-label">Реквизит</span>
+        </div>
+        <div class="hero-pill">
+          <div class="hero-pill-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M8 3l-5 4 2 1-2 11h16l-2-11 2-1-5-4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 3c0 1.657 1.343 3 3 3s3-1.343 3-3" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <span class="hero-pill-label">Костюмы</span>
+        </div>
+        <div class="hero-pill">
+          <div class="hero-pill-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7l-5-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 2v5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 13h4M9 10h6M9 16h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <span class="hero-pill-label">Документы</span>
+        </div>
+        <div class="hero-pill">
+          <div class="hero-pill-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 19c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15 14c2 0 5 1 5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <span class="hero-pill-label">Команда</span>
+        </div>
+        <div class="hero-pill">
+          <div class="hero-pill-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="12" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="7" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="15" y="3" width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <span class="hero-pill-label">Аналитика</span>
+        </div>
+      </div>
+      <div class="scroll-hint">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 2: PAIN -->
+<section id="pain">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-tag tag-red"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg> Знакомо?</div>
+      <div class="pain-header">
+        <h2 class="pain-title">Ты платишь<br>за беспорядок</h2>
+        <p class="pain-sub">Каждый проект теряет деньги там, где кажется что всё под контролем</p>
+      </div>
+      <div class="pain-cards">
+        <div class="pain-card">
+          <div class="pain-card-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="7" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 11h18M11 7v13" stroke="currentColor" stroke-width="1.5"/><path d="M7 4l4-2 4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="pain-card-title">Вещи исчезают</div>
+          <p class="pain-card-text">Никто не знает кто взял, когда вернёт и в каком состоянии. Реквизит находится в трёх разных таблицах и ни в одной — актуально.</p>
+          <div class="pain-card-stat">—20% бюджета</div>
+        </div>
+        <div class="pain-card">
+          <div class="pain-card-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="12" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M11 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 2h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div class="pain-card-title">Excel съедает часы</div>
+          <p class="pain-card-text">Администратор тратит 2–3 часа в день на ручной учёт. За проект это больше 60 часов — три полные рабочие недели.</p>
+          <div class="pain-card-stat">60+ часов впустую</div>
+        </div>
+        <div class="pain-card">
+          <div class="pain-card-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v2h6V3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 10h6M8 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div class="pain-card-title">Документы везде и нигде</div>
+          <p class="pain-card-text">КПП в одном чате, вызывной в другом, сценарий у режиссёра. Новая версия вышла — половина группы работает со старой.</p>
+          <div class="pain-card-stat">0 единой версии</div>
+        </div>
+      </div>
+      <div class="pain-conclusion">
+        Знакомо? <strong>Мы это починили.</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 3: GAIN -->
+<section id="gain">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-tag tag-green"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg> Что меняется</div>
+      <div class="gain-header">
+        <h2 class="gain-title">Порядок —<br>это тоже деньги</h2>
+      </div>
+      <div class="gain-rows">
+        <div class="gain-row">
+          <div class="gain-row-left">
+            <div class="gain-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 9h16" stroke="currentColor" stroke-width="1.4"/><path d="M6 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.4"/></svg></div>
+            <div>
+              <div class="gain-row-name">Каждая вещь на счету</div>
+              <div class="gain-row-desc">Знаешь где находится любой предмет прямо сейчас. Кто взял, когда вернёт, в каком состоянии — с любого устройства.</div>
+            </div>
+          </div>
+          <div class="gain-row-stat">0 потерь без объяснений</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-row-left">
+            <div class="gain-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 8h6M7 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <div class="gain-row-name">История не теряется</div>
+              <div class="gain-row-desc">Каждая выдача фиксируется автоматически. Акт подписан, дата записана, ответственный указан.</div>
+            </div>
+          </div>
+          <div class="gain-row-stat">Доказательства за 1 клик</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-row-left">
+            <div class="gain-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="10" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="8" y="6" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="14" y="2" width="4" height="15" rx="1" stroke="currentColor" stroke-width="1.4"/></svg></div>
+            <div>
+              <div class="gain-row-name">Видишь деньги</div>
+              <div class="gain-row-desc">Аналитика в реальном времени: сколько потрачено, что выдано проектам, выручка с аренды, что хранится на складе.</div>
+            </div>
+          </div>
+          <div class="gain-row-stat">Полная картина бюджета</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-row-left">
+            <div class="gain-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7l-5-5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 2v5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <div class="gain-row-name">Документы читает ИИ</div>
+              <div class="gain-row-desc">Загрузил КПП или вызывной — система сама разобрала структуру, сцены, персонажей. Вся группа видит актуальную версию.</div>
+            </div>
+          </div>
+          <div class="gain-row-stat">Автоматически</div>
+        </div>
+        <div class="gain-row">
+          <div class="gain-row-left">
+            <div class="gain-row-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8.5 11.5a4.5 4.5 0 0 0 6.364 0l2-2a4.5 4.5 0 0 0-6.364-6.364L9 4.636" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11.5 8.5a4.5 4.5 0 0 0-6.364 0l-2 2a4.5 4.5 0 0 0 6.364 6.364L11 15.364" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <div class="gain-row-name">Клиент видит склад без логина</div>
+              <div class="gain-row-desc">Публичная ссылка на склад — показываешь что есть без объяснений и регистраций.</div>
+            </div>
+          </div>
+          <div class="gain-row-stat">Доверие без лишних слов</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 4: PRODUCT -->
+<section id="product">
+  <div class="container">
+    <div class="fade-in">
+      <div class="section-tag tag-blue"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v2M6 9v2M1 6h2M9 6h2M2.5 2.5l1.4 1.4M8.1 8.1l1.4 1.4M2.5 9.5l1.4-1.4M8.1 3.9l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.2"/></svg> Как устроено</div>
+      <h2 class="product-title">Два мира.<br>Одна система.</h2>
+      <p class="product-sub">Склад и площадка работают вместе, у каждого своя роль и права</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('warehouse', this)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="7" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 7l7-5 7 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="6" y="10" width="4" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg> Склад</button>
+        <button class="tab-btn" onclick="switchTab('production', this)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M10 8l-4-2.5v5L10 8z" fill="currentColor"/></svg> Площадка</button>
+        <button class="tab-btn" onclick="switchTab('analytics', this)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Аналитика</button>
+      </div>
+
+      <div class="tab-content active" id="tab-warehouse">
+        <ul class="feature-list">
+          <li><strong>Приём и выдача</strong> имущества с автоматическими актами</li>
+          <li><strong>Карта склада</strong> — ячейки, полки, расположение каждой вещи</li>
+          <li><strong>Статусы</strong> — на складе, выдано, просрочено, списано</li>
+          <li><strong>Заявки</strong> от съёмочной группы прямо в систему</li>
+          <li><strong>Аренда</strong> с цифровым подписанием договора</li>
+          <li><strong>Команда</strong> — директор, зам, сотрудник склада</li>
+          <li><strong>Публичная ссылка</strong> на склад для клиентов</li>
+        </ul>
+        <div class="mockup-box">
+          <div class="mockup-bar">
+            <div class="mockup-dot" style="background:#EF4444"></div>
+            <div class="mockup-dot" style="background:#F59E0B"></div>
+            <div class="mockup-dot" style="background:#22C55E"></div>
+          </div>
+          <div class="mockup-row">
+            <span>Пальто чёрное (арт. 001)</span>
+            <span class="mockup-badge badge-green">На складе</span>
+          </div>
+          <div class="mockup-row">
+            <span>Саквояж кожаный</span>
+            <span class="mockup-badge badge-blue">Выдано</span>
+          </div>
+          <div class="mockup-row">
+            <span>Шляпа котелок</span>
+            <span class="mockup-badge badge-red">Просрочено</span>
+          </div>
+          <div class="mockup-row">
+            <span>Трость деревянная</span>
+            <span class="mockup-badge badge-amber">На утверждении</span>
+          </div>
+          <div class="mockup-row">
+            <span>Чемодан vintage</span>
+            <span class="mockup-badge badge-green">На складе</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-production">
+        <ul class="feature-list">
+          <li><strong>КПП, сценарий, вызывной</strong> — загрузка одним файлом</li>
+          <li><strong>ИИ читает документы</strong> и структурирует сцены, персонажей, реквизит</li>
+          <li><strong>Списки по отделам</strong> — реквизит, костюмы, грим, трюки, пиротехника</li>
+          <li><strong>Заявки на склад</strong> прямо из списка сцены</li>
+          <li><strong>Все видят актуальную версию</strong> — никаких старых КПП в чатах</li>
+          <li><strong>20+ ролей</strong> — у каждого свои права и доступы</li>
+        </ul>
+        <div class="mockup-box">
+          <div class="mockup-bar">
+            <div class="mockup-dot" style="background:#EF4444"></div>
+            <div class="mockup-dot" style="background:#F59E0B"></div>
+            <div class="mockup-dot" style="background:#22C55E"></div>
+          </div>
+          <div class="mockup-row">
+            <span>КПП 45-48 серии</span>
+            <span class="mockup-badge badge-green">Загружен</span>
+          </div>
+          <div class="mockup-row">
+            <span>Вызывной № 12 — 24.12</span>
+            <span class="mockup-badge badge-blue">Новая версия</span>
+          </div>
+          <div class="mockup-row">
+            <span>Сц. 45-4 · Реквизит</span>
+            <span class="mockup-badge badge-amber">Заявка</span>
+          </div>
+          <div class="mockup-row">
+            <span>Список костюмов · 38 ед.</span>
+            <span class="mockup-badge badge-green">Готово</span>
+          </div>
+          <div class="mockup-row">
+            <span>Грим · Сцена 46-1</span>
+            <span class="mockup-badge badge-blue">В работе</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-analytics">
+        <ul class="feature-list">
+          <li><strong>Потрачено / Выдано / Хранится</strong> — сводка в реальном времени</li>
+          <li><strong>Выручка с аренды</strong> — сколько заработал склад</li>
+          <li><strong>Топ категорий</strong> — что чаще всего запрашивают</li>
+          <li><strong>Активные сделки и просрочки</strong> — всё на одном экране</li>
+          <li><strong>История движения</strong> каждой единицы имущества</li>
+        </ul>
+        <div class="mockup-box">
+          <div class="mockup-bar">
+            <div class="mockup-dot" style="background:#EF4444"></div>
+            <div class="mockup-dot" style="background:#F59E0B"></div>
+            <div class="mockup-dot" style="background:#22C55E"></div>
+          </div>
+          <div class="mockup-row" style="flex-direction:column; align-items:flex-start; gap:0.3rem;">
+            <span style="font-size:0.7rem; color:var(--muted);">Потрачено</span>
+            <span style="font-size:1.3rem; font-weight:700; color:var(--text);">₽ 2 340 000</span>
+          </div>
+          <div class="mockup-row" style="flex-direction:column; align-items:flex-start; gap:0.3rem;">
+            <span style="font-size:0.7rem; color:var(--muted);">Выручка с аренды</span>
+            <span style="font-size:1.3rem; font-weight:700; color:#4ADE80;">₽ 480 000</span>
+          </div>
+          <div class="mockup-row">
+            <span>Активных сделок</span>
+            <span style="font-weight:700; color:var(--amber);">12</span>
+          </div>
+          <div class="mockup-row">
+            <span>Просрочено</span>
+            <span style="font-weight:700; color:#F87171;">3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roles-strip">
+        <div class="roles-label">Роли в системе</div>
+        <div class="roles-chips">
+          <span class="chip warehouse">Директор склада</span>
+          <span class="chip warehouse">Зам директора</span>
+          <span class="chip warehouse">Сотрудник склада</span>
+          <span class="chip production">Продюсер</span>
+          <span class="chip production">Директор проекта</span>
+          <span class="chip production">Художник-постановщик</span>
+          <span class="chip production">Реквизитор</span>
+          <span class="chip production">Костюмер</span>
+          <span class="chip production">Гримёр</span>
+          <span class="chip production">Декоратор</span>
+          <span class="chip production">Режиссёр-постановщик</span>
+          <span class="chip production">Оператор</span>
+          <span class="chip production">Пиротехник</span>
+          <span class="chip production">Постановщик трюков</span>
+          <span class="chip production">Водитель</span>
+          <span class="chip production">Гафер</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 5: CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-inner fade-in">
+      <div class="section-tag tag-amber"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 2.5C1 2.5 .5 2.5 .5 3.5s.5 3.5 4 7S9 10 9 10s1.5 0 1.5-1-.8-1.6-1.6-2-.6.2-1 .5c-.2.2-.4.3-.7.1C6.5 6.8 4.8 5.5 4.4 4.7c-.2-.3-.1-.5.1-.7.3-.3.6-.9.3-1.6C4.5 1.8 3.5 1 2.5 1H1z" stroke="currentColor" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round"/></svg> Контакты</div>
+      <h2 class="contact-title">Готов навести порядок?</h2>
+
+      <div class="contact-direct">
+        <a href="tel:+79118365898" class="contact-link">
+          <span class="link-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 1.5C2.5 1.5 1 1.5 1 3s1 5 5.5 9.5S14 14 14 14s1.5 0 1.5-1.5-1-2-2-2.5c-.8-.4-1.5 0-2 .5-.2.2-.5.3-.8.1C9.3 9.3 7 7.5 6.4 6.3c-.2-.3-.1-.6.1-.8.5-.5.9-1.2.5-2C6.5 2.5 5.5 1.5 4 1.5H2.5z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          +7 911 836-58-98 · Павел
+        </a>
+        <a href="mailto:info@3xmedia.ru" class="contact-link">
+          <span class="link-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </span>
+          pavelgeel@gmail.com
+        </a>
+      </div>
+
+      <a href="https://3xproduction-production.up.railway.app/" target="_blank" class="btn-start-main">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 6l5 3-5 3V6z" fill="currentColor"/></svg>
+        Начать работу
+      </a>
+      <a href="Технический_документ_3xproduction.pdf" download="Технический_документ_3xproduction.pdf" class="doc-download">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9 2H4a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M8 8v4M6 10l2 2 2-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Скачать техническую документацию
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  3XMEDIA PRODUCTION · Версия 1.0 · 2026 · Сделано для кино
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Intersection observer for subtle animation - content visible by default
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.05 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('fname').value;
+    const project = document.getElementById('fproject').value;
+    const msg = document.getElementById('fmessage').value;
+    const subject = encodeURIComponent('Запрос доступа �
